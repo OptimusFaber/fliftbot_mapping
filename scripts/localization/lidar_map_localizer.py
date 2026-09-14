@@ -30,8 +30,10 @@ def load_module(name: str, path: Path):
     return module
 
 
-DEPHAN = load_module('fliftbot_dephan_udp', ROOT / 'DePHAN_LiDAR/receive_scan.py')
-PANDAR = load_module('fliftbot_pandar_udp', ROOT / 'Pandar_LiDAR/receive_pandar40p.py')
+# Sensor drivers are loaded lazily in ``main``.  Pandar-only deployments do
+# not need the optional DePHAN checkout (and vice versa).
+DEPHAN = None
+PANDAR = None
 
 
 def yaml_value(text: str, key: str):
@@ -214,7 +216,14 @@ def parse_args():
 
 
 def main():
+    global DEPHAN, PANDAR
     args = parse_args()
+    if args.sensor == 'dephan':
+        DEPHAN = load_module(
+            'fliftbot_dephan_udp', ROOT / 'DePHAN_LiDAR/receive_scan.py')
+    else:
+        PANDAR = load_module(
+            'fliftbot_pandar_udp', ROOT / 'Pandar_LiDAR/receive_pandar40p.py')
     defaults = {'pandar': (2368, '192.168.0.223', 0.590, 0.035),
                 'dephan': (50007, '192.168.0.120', 1.015, 0.0)}
     port, source, mount_x, mount_y = defaults[args.sensor]
