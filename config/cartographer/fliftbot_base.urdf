@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<!-- Static sensor transforms are replayed from the bag's /tf_static topic. -->
-<robot name="fliftbot_offline">
-  <link name="base_link"/>
-</robot>

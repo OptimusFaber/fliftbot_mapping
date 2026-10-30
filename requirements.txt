@@ -1,0 +1,6 @@
+numpy>=1.21
+scipy>=1.8
+Pillow>=9
+PyYAML>=5.4
+pyzmq>=22
+protobuf>=3.12

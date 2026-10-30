@@ -1,33 +1,30 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>flifltbot</name>
-  <version>0.0.0</version>
-  <description>Platform-independent offline LiDAR mapping for simulated and physical Fliftbot recordings.</description>
+  <name>fliftbot_lidar_nav</name>
+  <version>0.1.0</version>
+  <description>LiDAR localization and navigation pose output on saved Fliftbot maps.</description>
   <maintainer email="OptimusFaber@users.noreply.github.com">OptimusFaber</maintainer>
   <license>MIT</license>
-
   <buildtool_depend>ament_python</buildtool_depend>
-
-  <!-- Required only by the optional ROS 2 Cartographer launch baseline. -->
+  <exec_depend>ament_index_python</exec_depend>
   <exec_depend>cartographer_ros</exec_depend>
   <exec_depend>cartographer_ros_msgs</exec_depend>
-  <exec_depend>builtin_interfaces</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
-
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
+  <exec_depend>fliftbot_interfaces</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <exec_depend>python3-pil</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-zmq</exec_depend>
+  <exec_depend>python3-protobuf</exec_depend>
   <test_depend>python3-pytest</test_depend>
-
-  <export>
-    <build_type>ament_python</build_type>
-  </export>
+  <export><build_type>ament_python</build_type></export>
 </package>

@@ -1,0 +1,16 @@
+{
+  "marker_id": 98,
+  "frame": "cartographer_map",
+  "marker98_map_xy_m": [-0.6078121228085813, 2.2447154602102986],
+  "marker98_map_yaw_rad": 0.6346814707322781,
+  "marker98_map_yaw_deg": 36.36456960811542,
+  "axis_contract": "marker98 origin; +X and +Y follow the navigation GT frame",
+  "source": "run_170557 synchronized Cartographer-to-GT lidar trajectory proper SE(2); marker coordinates were not used by the fit",
+  "validation": {
+    "trajectory_samples": 2000,
+    "trajectory_position_error_median_m": 0.04064194116007401,
+    "trajectory_position_error_p95_m": 0.11810314611769235,
+    "old_map_registration_marker98_xy_m": [-0.6517986505514366, 2.228509189400818],
+    "old_map_registration_marker98_yaw_deg": 37.01402989726408
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "marker_id": 98,
+  "frame": "cartographer_map",
+  "marker98_map_xy_m": [2.5841167484129963, -2.3412835385726893],
+  "marker98_map_yaw_rad": 0.0,
+  "axis_contract": "marker98 origin with axes parallel to Cartographer map",
+  "source": "observations_cartographer_final/marker_points_cartographer.json",
+  "observations": 209,
+  "spread_m": 0.00593319451819743
+}

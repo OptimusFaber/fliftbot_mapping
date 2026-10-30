@@ -1,1 +1,0 @@
-"""Offline/global mapping package."""

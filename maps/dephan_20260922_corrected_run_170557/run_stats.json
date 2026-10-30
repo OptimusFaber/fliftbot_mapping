@@ -1,0 +1,16 @@
+{
+  "scans": 8875,
+  "odom_samples": 6777,
+  "constraints": 4272,
+  "tracking_frame": "lidar",
+  "wheelbase_m": 1.41,
+  "steering_offset_deg": 90,
+  "odometry_time_offset_s": 0,
+  "encoder_speed_sign": -1,
+  "rplidar_timing_mode": "not_applicable",
+  "rplidar_timestamp_convention": "not_applicable",
+  "rplidar_synthesized_scans": 0,
+  "rplidar_collapsed_scans": 0,
+  "rplidar_period_s": 0,
+  "rplidar_direction": "unknown"
+}

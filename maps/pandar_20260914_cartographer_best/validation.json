@@ -1,0 +1,31 @@
+{
+  "map": "ros-data/results/real/20260914/154006_pandar_room/cartographer_best/map.pgm",
+  "resolution_m": 0.05,
+  "occupied_threshold": 127,
+  "map_extent": {
+    "n": 3957,
+    "min_x_m": -10.624744399999999,
+    "max_x_m": 13.4752556,
+    "min_y_m": -11.062647199999999,
+    "max_y_m": 8.687352800000003,
+    "width_m": 24.1,
+    "height_m": 19.75,
+    "area_bbox_m2": 475.975
+  },
+  "map_structure": {
+    "occupied_cells": 3957,
+    "total_cells": 200564,
+    "occupied_fraction": 0.01972936319578788,
+    "connected_components": 84
+  },
+  "trajectory_extent": {
+    "n": 722,
+    "min_x_m": -0.718105,
+    "max_x_m": 5.20817,
+    "min_y_m": -5.18519,
+    "max_y_m": 0.411636,
+    "width_m": 5.926275,
+    "height_m": 5.596826,
+    "area_bbox_m2": 33.168330003150004
+  }
+}

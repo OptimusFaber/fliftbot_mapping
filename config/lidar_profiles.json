@@ -1,0 +1,42 @@
+{
+  "dephan": {
+    "udp_port": 50007,
+    "source_ip": "192.168.0.120",
+    "scan_rate_hz": 25.0,
+    "map_directory": "maps/dephan_20260922_corrected_run_170557",
+    "scan_to_base": {
+      "x_m": 1.329,
+      "y_m": 0.315,
+      "yaw_deg": 176.72766139035463
+    },
+    "physical_mount_ros": {
+      "x_m": 1.329,
+      "y_m": 0.315,
+      "z_m": 2.04
+    },
+    "odometry": {
+      "speed_sign": -1.0,
+      "steering_zero_deg": -90.0,
+      "wheelbase_m": 1.41,
+      "model": "legacy_sin"
+    },
+    "note": "run_170557 accepted geometry; yaw converts the exported DePHAN scan heading to the robot body heading"
+  },
+  "pandar": {
+    "udp_port": 2368,
+    "source_ip": "192.168.0.223",
+    "scan_rate_hz": 10.0,
+    "map_directory": "maps/pandar_20260914_cartographer_best",
+    "scan_to_base": {
+      "x_m": 0.59,
+      "y_m": 0.035,
+      "yaw_deg": 0.0
+    },
+    "odometry": {
+      "speed_sign": 1.0,
+      "steering_zero_deg": 0.0,
+      "wheelbase_m": 1.41,
+      "model": "legacy_sin"
+    }
+  }
+}

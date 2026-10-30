@@ -1,57 +1,12 @@
-# ROS/colcon output
-build/
-install/
-log/
-
-# Runtime and experiment output
-logs/
-results/
-maps/
-_archive/
-scripts/tools/results/
-src/flifltbot/common/mapping/live_map.png
-src/flifltbot/common/mapping/live_map_result.json
-*.db
-*.db3
-*.bag
-*.mcap
-
-# Python/editor caches
+/build/
+/install/
+/log/
+/logs/
+/results/
+/maps/custom/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
+.venv/
 .coverage
-htmlcov/
-.vscode/
-.idea/
-.cursor/
-.codex/
-
-# Native build-system leftovers outside the regular build directory
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-CTestTestfile.cmake
-Makefile
-compile_commands.json
-
-# Local third-party source trees (installed separately)
-third_party/
-rtabmap/
-rf2o_laser_odometry/
-
-# Host-specific Gazebo Fuel symlinks (recreated by link_fuel_models.sh)
-simulation/models/cart_model_2
-simulation/models/pallet_box_mobile
-simulation/models/shelf
-simulation/models/shelf_big
-simulation/models/tugbot-charging-station
-simulation/models/warehouse
-
-# Local papers and generated documents
-*.pdf
-
-# Model weights are downloaded, not versioned
-*.pth
