@@ -1,0 +1,23 @@
+{
+  "schema": "fliftbot.map_origin_reference.v1",
+  "frame": "cartographer_map",
+  "origin_name": "lower_left_column_center",
+  "origin_map_xy_m": [
+    5.891065613480613,
+    -32.38323134642633
+  ],
+  "origin_map_yaw_rad": 1.6318925099078272,
+  "origin_map_yaw_deg": 93.50055343672938,
+  "y_axis_sign": 1,
+  "axis_contract": "+X right, +Y up on map_light.png",
+  "angle_contract": "0 toward image right; positive counterclockwise toward image up",
+  "pixel_xy_base": [
+    152,
+    4103
+  ],
+  "pixel_xy_tver": [
+    252,
+    4203
+  ],
+  "source": "base.jpeg registered to source map_1cm/map.pgm; matching PBStream retained"
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message SensorMeasurement {
+    enum SensorType {
+        top_navigation = 0;
+        top_navigation_position = 1;
+        top_navigation_yaw = 2;
+        wheel_odometry = 3;
+        lidar = 4;
+    }
+
+    SensorType sensor_type = 1;
+    double timestamp = 2; // Unix timestamp in seconds
+    repeated double value = 3; // Sensor reading value (variable length for different sensor types)
+    repeated double variance = 4; // Covariance matrix for the sensor reading (optional, variable length)
+
+}

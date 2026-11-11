@@ -304,7 +304,7 @@ def main():
     import rclpy
     rclpy.init(args=None)
     from lidar_profiles import load_profile
-    from map_bundle import read_reference
+    from map_bundle import read_reference, read_y_axis_sign
     profile = load_profile(args.sensor, args.map_dir)
     if args.map is not None and args.marker_reference is None:
         raise ValueError("--map override requires --marker-reference; prefer --map-dir")
@@ -325,6 +325,7 @@ def main():
     if args.out is None:
         args.out = ROOT / "results" / f"{args.sensor}_pose.csv"
     marker_x, marker_y, marker_a = read_reference(ref_path)
+    y_axis_sign = read_y_axis_sign(ref_path)
     map_points, field, resolution, origin, shape = load_map(map_path)
     tree = cKDTree(map_points)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -362,7 +363,8 @@ def main():
                                       "overlap": overlap}), file=sys.stderr, flush=True)
                     continue
                 pose = candidate
-                x, y, alpha = pose_in_marker98_frame(*pose, marker_x, marker_y, marker_a)
+                x, y, alpha = pose_in_marker98_frame(*pose, marker_x, marker_y, marker_a,
+                                                    y_axis_sign=y_axis_sign)
                 record = {"x": x, "y": y, "alpha": alpha, "ts": ts}
                 writer.writerow((f"{x:.6f}", f"{y:.6f}", f"{alpha:.6f}", f"{ts:.9f}"))
                 print(json.dumps(record, separators=(",", ":")), flush=True)

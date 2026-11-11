@@ -39,6 +39,9 @@ def nodes(context):
                             "--map-frame", "lidar_nav_map", "--base-frame", "lidar_nav_base",
                             "--topic", "/localization/lidar_pose", "--no-send-to-navigation",
                             "--csv", LaunchConfiguration("pose_csv"),
+                            "--journal", LaunchConfiguration("journal"),
+                            "--scenario-config", LaunchConfiguration("scenario_config"),
+                            "--scan-topic", "/lidar_nav/scan", "--odom-topic", "/lidar_nav/wheel_odom",
                             "--ros-args", "-p", "use_sim_time:=true"], output="screen"),
     ]
 
@@ -47,4 +50,6 @@ def generate_launch_description():
     return LaunchDescription([DeclareLaunchArgument("map_dir"),
                               DeclareLaunchArgument("initial_pose", default_value=""),
                               DeclareLaunchArgument("pose_csv", default_value=""),
+                              DeclareLaunchArgument("journal", default_value=""),
+                              DeclareLaunchArgument("scenario_config", default_value=""),
                               OpaqueFunction(function=nodes)])

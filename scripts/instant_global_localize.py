@@ -322,6 +322,8 @@ def main() -> int:
         reference = json.loads(profile["reference"].read_text(encoding="utf-8"))
         from map_bundle import read_reference
         marker_x, marker_y, marker_yaw = read_reference(profile["reference"])
+        from map_bundle import read_y_axis_sign
+        y_axis_sign = read_y_axis_sign(profile["reference"])
         marker_xy = (marker_x, marker_y)
         config["map_reference"] = reference
         config["map_resolution_m"] = resolution
@@ -382,7 +384,7 @@ def main() -> int:
         score = score_fn(base_points[::max(1, len(base_points) // 500)],
                          refined_pose, field, resolution, origin, shape)
         x, y, alpha_rad = pose_in_marker98_frame(
-            *refined_pose, marker_x, marker_y, marker_yaw)
+            *refined_pose, marker_x, marker_y, marker_yaw, y_axis_sign=y_axis_sign)
         alpha_deg = math.degrees(alpha_rad)
         accepted = overlap >= args.min_overlap and rmse <= args.max_rmse
         pose_result = {

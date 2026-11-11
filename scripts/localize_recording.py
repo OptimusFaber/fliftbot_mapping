@@ -9,8 +9,9 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial import cKDTree
 import direct_udp_mc_localizer as matcher
-from map_bundle import validate_bundle, read_reference
+from map_bundle import validate_bundle, read_reference, read_y_axis_sign
 from marker98_pose import pose_in_marker98_frame
+from localization_journal import Journal, load_scenario
 
 
 def main() -> int:
@@ -19,6 +20,7 @@ def main() -> int:
     parser.add_argument("--map-dir", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--initial", nargs=3, type=float, metavar=("X_MAP", "Y_MAP", "YAW_RAD"))
+    parser.add_argument("--scenario-config", type=Path)
     parser.add_argument("--stride", type=int, default=1)
     parser.add_argument("--min-overlap", type=float, default=.5)
     parser.add_argument("--max-rmse", type=float, default=.2)
@@ -39,8 +41,14 @@ def main() -> int:
     points, field, resolution, origin, shape = matcher.load_map(root / "map.yaml")
     tree = cKDTree(points)
     reference = read_reference(root / "origin_reference.json")
+    y_axis_sign = read_y_axis_sign(root / "origin_reference.json")
     pose = tuple(args.initial) if args.initial else None
     accepted, rejected = [], []
+    journal = Journal(args.output / "journal.jsonl", load_scenario(args.scenario_config), {
+        "algorithm": "offline_icp", "recording": str(args.recording.resolve()),
+        "map_dir": str(root), "navigation_config": calibration,
+        "units": "metres/radians", "clock": "input_stamp",
+    })
     for number, path in enumerate(files):
         with np.load(path) as data:
             scan = np.asarray(data["xy"], dtype=float)
@@ -50,17 +58,22 @@ def main() -> int:
         valid = np.isfinite(scan).all(axis=1) & (radius >= .15) & (radius <= calibration["max_range_m"])
         base = matcher.transform(scan[valid], (mount["x_m"], mount["y_m"], math.radians(mount["yaw_deg"])))
         if len(base) < 100:
+            journal.observe(stamp, reason="sparse_scan", frame=frame, valid_points=len(base))
             rejected.append({"frame": frame, "reason": "sparse"})
             continue
         seed = pose if pose is not None else matcher.global_pose(base, field, resolution, origin, shape)
         candidate, rmse, overlap = matcher.icp(base, tree, seed)
         if not math.isfinite(rmse) or rmse > args.max_rmse or overlap < args.min_overlap:
+            journal.observe(stamp, reason="quality_rejected", frame=frame,
+                            rmse_m=rmse if math.isfinite(rmse) else None, overlap=float(overlap))
             rejected.append({"frame": frame, "reason": "quality", "overlap": overlap,
                              "rmse": rmse if math.isfinite(rmse) else None})
             continue
         pose = candidate
-        local = pose_in_marker98_frame(*pose, *reference)
+        local = pose_in_marker98_frame(*pose, *reference, y_axis_sign=y_axis_sign)
+        journal.observe(stamp, stamp, local, frame=frame, rmse_m=float(rmse), overlap=float(overlap), valid_points=len(base))
         accepted.append((stamp, frame, *pose, *local, rmse, overlap))
+    journal.close(stamp)
     with (args.output / "trajectory.csv").open("w", newline="") as stream:
         writer = csv.writer(stream)
         writer.writerow(("ts", "frame", "map_x", "map_y", "map_yaw_rad", "x", "y", "alpha_rad", "rmse_m", "overlap"))

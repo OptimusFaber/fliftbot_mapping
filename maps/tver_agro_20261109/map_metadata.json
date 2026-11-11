@@ -1,0 +1,98 @@
+{
+  "schema": "tver_agro_web_assets.v1",
+  "source": "tver-agro-map.png",
+  "registered_to": "base.jpeg",
+  "registration_offset_tver_px": [
+    100,
+    100
+  ],
+  "contour_distance_score_px": 4.312,
+  "resolution_m_per_px": 0.01,
+  "grid_spacing_px": 100,
+  "grid_spacing_m": 1,
+  "origin_pixel_xy_tver": [
+    252,
+    4203
+  ],
+  "origin_pixel_xy_base": [
+    152,
+    4103
+  ],
+  "axis_contract": "+X right, +Y up",
+  "assets": [
+    "map_light.png",
+    "map_bw.png",
+    "map_grid_1m.png"
+  ],
+  "angle_contract": "0 toward image right; positive counterclockwise toward image up",
+  "matrices": {
+    "local_xy_metres_to_raster_uv_pixels": [
+      [
+        100.0,
+        0.0,
+        252.0
+      ],
+      [
+        0.0,
+        -100.0,
+        4203.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "pbstream_map_xy_metres_to_local_xy_metres": [
+      [
+        -0.061058180808609,
+        0.9981342086895646,
+        32.68250874415963
+      ],
+      [
+        -0.9981342086895646,
+        -0.061058180808609,
+        3.902812919732663
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "pbstream_map_xy_metres_to_raster_uv_pixels": [
+      [
+        -6.1058180808609,
+        99.81342086895646,
+        3520.2508744159627
+      ],
+      [
+        99.81342086895646,
+        6.1058180808609,
+        3812.7187080267336
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "navigation_bundle": "/home/optimus/ros-projects/fliftbot_lidar_nav/maps/tver_agro_20261109",
+  "pixel_convention": "integer (u,v) identifies pixel center",
+  "web_image": "map_light.png",
+  "image_size_px": [
+    4047,
+    4391
+  ],
+  "pixel_origin": "top_left",
+  "navigation_image": "map.pgm",
+  "navigation_image_frame": "original_cartographer_map",
+  "local_frame_handedness": "right_handed_with_z_up",
+  "web_conversion": {
+    "u": "252 + 100*x",
+    "v": "4203 - 100*y",
+    "x": "(u-252)/100",
+    "y": "(4203-v)/100"
+  }
+}

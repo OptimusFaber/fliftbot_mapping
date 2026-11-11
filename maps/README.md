@@ -1,5 +1,11 @@
 # Reference-карты
 
+- `tver_agro_20261109` — комплект Тверь-Агро: occupancy из `base.jpeg`,
+  исходный PBStream и калибровка запуска 20261109_141038.
+  Выходная СК: X вправо, Y вверх на веб-карте, угол положительный против часовой
+  стрелки от X (`y_axis_sign: 1`). Ноль — выбранный центр нижней левой колонны.
+  Выбор: `./fliftbot_lidar_nav/nav.sh check-map --map-dir fliftbot_lidar_nav/maps/tver_agro_20261109`.
+
 - `dephan_20260922_corrected_run_170557` — принятая историческая DePHAN-карта;
 - `pandar_20260914_cartographer_best` — историческая Pandar40P-карта.
 

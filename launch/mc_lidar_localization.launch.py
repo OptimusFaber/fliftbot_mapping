@@ -16,8 +16,9 @@ PYTHON = os.environ.get("FLIFTBOT_LIDAR_NAV_PYTHON", sys.executable)
 SCRIPTS = ROOT / "scripts"
 CONFIG = ROOT / "config" / "cartographer"
 sys.path.insert(0, str(SCRIPTS))
-from robot_identity import mc_topic, robot_namespace
+from robot_identity import mc_topic
 from lidar_profiles import load_profile
+from wheel_motion import resolve_odometry_model
 
 
 def _nodes(context):
@@ -72,8 +73,15 @@ def _nodes(context):
     speed_sign_arg = LaunchConfiguration("speed_sign").perform(context)
     steering_zero_arg = LaunchConfiguration("steering_zero_deg").perform(context)
     wheelbase_arg = LaunchConfiguration("wheelbase").perform(context)
-    odometry_model = LaunchConfiguration("odom_model").perform(context) or odometry.get("model", "drive_wheel")
-    steering_sign = str(odometry.get("steering_sign", 1.0))
+    odometry_model = resolve_odometry_model(
+        LaunchConfiguration("odom_model").perform(context),
+        LaunchConfiguration("use_legacy_sin").perform(context),
+        odometry.get("model", "drive_wheel"))
+    steering_sign = LaunchConfiguration("steering_sign").perform(context) or str(odometry.get("steering_sign", 1.0))
+    scan_rate = LaunchConfiguration("scan_rate_hz").perform(context) or str(profile.get("scan_rate_hz", 20.0))
+    range_max = LaunchConfiguration("range_max").perform(context) or str(profile.get("max_range_m", 30.0))
+    udp_port = LaunchConfiguration("udp_port").perform(context) or str(profile["udp_port"])
+    udp_source = LaunchConfiguration("udp_source").perform(context) or profile["source_ip"]
     speed_sign = speed_sign_arg or str(odometry.get("speed_sign", -1.0))
     steering_zero = steering_zero_arg or str(odometry.get("steering_zero_deg", 0.0))
     wheelbase = wheelbase_arg or str(odometry.get("wheelbase_m", 1.410))
@@ -88,6 +96,10 @@ def _nodes(context):
         PYTHON, str(SCRIPTS / "live_marker98_pose.py"),
         "--marker-reference", pose_reference,
         "--csv", pose_csv,
+        "--journal", LaunchConfiguration("journal"),
+        "--scenario-config", LaunchConfiguration("scenario_config"),
+        "--scan-topic", LaunchConfiguration("scan_topic"),
+        "--odom-topic", LaunchConfiguration("odom_topic"),
         "--rate", LaunchConfiguration("pose_rate_hz"),
         "--sensor-send-rate", LaunchConfiguration("navigation_send_rate_hz"),
         "--sensor-socket", LaunchConfiguration("continuous_nav_sensor_socket"),
@@ -106,8 +118,10 @@ def _nodes(context):
                 PYTHON, str(SCRIPTS / "direct_udp_scan_publisher.py"),
                 "--sensor", sensor,
                 "--scan-topic", LaunchConfiguration("scan_topic"),
-                "--scan-rate-hz", str(profile.get("scan_rate_hz", 20.0)),
-                "--range-max", str(profile.get("max_range_m", 30.0)),
+                "--scan-rate-hz", scan_rate,
+                "--range-max", range_max,
+                "--port", udp_port,
+                "--source", udp_source,
                 "--bind", LaunchConfiguration("udp_bind"),
                 "--sensor-yaw-deg", sensor_yaw,
                 "--sensor-x", sensor_x,
@@ -170,6 +184,7 @@ def _nodes(context):
         cmd=[PYTHON, str(SCRIPTS / "initialize_localization.py"),
              "--map-dir", str(Path(map_pbstream).parent),
              "--configuration-directory", LaunchConfiguration("configuration_directory"),
+             "--configuration-basename", LaunchConfiguration("configuration_basename"),
              "--scan-topic", LaunchConfiguration("scan_topic"),
              f"--initial-pose={LaunchConfiguration('initial_pose').perform(context)}"], output="screen"))
     if LaunchConfiguration("publish_occupancy_grid").perform(context).lower() in (
@@ -184,6 +199,8 @@ def _nodes(context):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument("journal", default_value=""),
+        DeclareLaunchArgument("scenario_config", default_value=""),
         DeclareLaunchArgument("map_dir", default_value="",
                               description="fliftbot_map_build calibrated deploy bundle"),
         DeclareLaunchArgument("initial_pose", default_value="",
@@ -203,6 +220,10 @@ def generate_launch_description():
         DeclareLaunchArgument("scan_topic", default_value="/scan"),
         DeclareLaunchArgument("odom_topic", default_value="/wheel_odom"),
         DeclareLaunchArgument("udp_bind", default_value="0.0.0.0"),
+        DeclareLaunchArgument("udp_port", default_value="", description="empty: sensor profile UDP port"),
+        DeclareLaunchArgument("udp_source", default_value="", description="empty: sensor profile source IP"),
+        DeclareLaunchArgument("scan_rate_hz", default_value="", description="scan_time metadata only; empty: sensor profile"),
+        DeclareLaunchArgument("range_max", default_value="", description="LaserScan upper range in metres; empty: bundle/profile"),
         DeclareLaunchArgument("sensor_x", default_value="",
                               description="empty selects the sensor profile default"),
         DeclareLaunchArgument("sensor_y", default_value="",
@@ -211,6 +232,7 @@ def generate_launch_description():
                               description="empty selects the sensor profile default"),
         DeclareLaunchArgument("speed_sign", default_value="",
                               description="empty selects the map profile default"),
+        DeclareLaunchArgument("steering_sign", default_value="", description="empty: bundle/profile steering sign"),
         DeclareLaunchArgument("steering_zero_deg", default_value="",
                               description="empty selects the map profile default"),
         DeclareLaunchArgument("wheelbase", default_value="",
@@ -219,6 +241,8 @@ def generate_launch_description():
             "odom_model", default_value="",
             description="empty uses bundle/profile; drive_wheel, legacy_sin or bicycle",
         ),
+        DeclareLaunchArgument("use_legacy_sin", default_value="",
+                              description="compatibility: true=legacy_sin, false=bicycle; empty: odom_model/bundle"),
         DeclareLaunchArgument("marker_pose_csv", default_value=""),
         DeclareLaunchArgument(
             "pose_offset_x_m", default_value="0.0",

@@ -79,7 +79,7 @@ class Initializer(Node):
             x, y, yaw = self.candidate
             request = StartTrajectory.Request()
             request.configuration_directory = str(self.args.configuration_directory)
-            request.configuration_basename = "fliftbot_2d_pure_localization.lua"
+            request.configuration_basename = self.args.configuration_basename
             request.use_initial_pose = True
             request.relative_to_trajectory_id = 0
             request.initial_pose.position.x, request.initial_pose.position.y = x, y
@@ -99,6 +99,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--map-dir", type=Path, required=True)
     parser.add_argument("--configuration-directory", type=Path, required=True)
+    parser.add_argument("--configuration-basename", default="fliftbot_2d_pure_localization.lua")
     parser.add_argument("--scan-topic", default="/scan")
     parser.add_argument("--base-frame", default="base_link")
     parser.add_argument("--initial-pose", default="", help="optional X_MAP,Y_MAP,YAW_RAD; still scan-validated")

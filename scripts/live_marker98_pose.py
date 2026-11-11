@@ -19,13 +19,17 @@ import time
 import rclpy
 from geometry_msgs.msg import TransformStamped
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import String
 from tf2_ros import Buffer, TransformListener
 
 from marker98_pose import pose_in_marker98_frame
 
 
-from navigation_output import LidarSensorSender
+from navigation_output import LidarSensorSender, LIDAR_VARIANCE
+from localization_journal import Journal, load_scenario
+from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
 
 
 class Marker98PoseNode(Node):
@@ -40,6 +44,24 @@ class Marker98PoseNode(Node):
         self.marker_y = float(origin_xy[1])
         self.marker_alpha = float(reference.get(
             "origin_map_yaw_rad", reference.get("marker98_map_yaw_rad", 0.0)))
+        from map_bundle import read_y_axis_sign
+        self.y_axis_sign = read_y_axis_sign(Path(args.marker_reference))
+        self.scenario = load_scenario(args.scenario_config or None)
+        journal_path = args.journal or (str(args.csv) + ".journal.jsonl" if args.csv else "")
+        self.journal = Journal(journal_path, self.scenario, {
+            "algorithm": "cartographer", "reference_file": str(Path(args.marker_reference).resolve()),
+            "reference": reference, "map_frame": args.map_frame, "base_frame": args.base_frame,
+            "pose_offset_m": [args.pose_offset_x_m, args.pose_offset_y_m],
+            "clock": "ros", "units": "metres/radians",
+            "runtime_settings": vars(args),
+            "navigation_config": json.loads((Path(args.marker_reference).parent / "navigation_config.json").read_text())
+                if (Path(args.marker_reference).parent / "navigation_config.json").is_file() else None,
+        }) if journal_path else None
+        self.last_scan = None
+        self.last_odom = None
+        self.last_journal_time = None
+        self.scan_sub = self.create_subscription(LaserScan, args.scan_topic, self.on_scan, qos_profile_sensor_data)
+        self.odom_sub = self.create_subscription(Odometry, args.odom_topic, self.on_odom, qos_profile_sensor_data)
         self.map_frame = args.map_frame
         self.base_frame = args.base_frame
         self.pose_offset_x = float(args.pose_offset_x_m)
@@ -67,6 +89,7 @@ class Marker98PoseNode(Node):
             f"pose offset in base_link: x={self.pose_offset_x:+.3f} m, "
             f"y={self.pose_offset_y:+.3f} m"
         )
+        self.last_send_warning_monotonic = -math.inf
         self.sender_first_message_logged = False
         self.last_sensor_timestamp = None
         self.skipped_duplicate_timestamps = 0
@@ -88,6 +111,33 @@ class Marker98PoseNode(Node):
         self.timer = self.create_timer(
             1.0 / max(args.rate, args.sensor_send_rate), self.tick)
 
+    def on_scan(self, message):
+        now = self.get_clock().now().nanoseconds * 1e-9
+        stamp = message.header.stamp.sec + message.header.stamp.nanosec * 1e-9
+        count = sum(math.isfinite(v) and message.range_min <= v <= message.range_max for v in message.ranges)
+        self.last_scan = {"received_s": now, "stamp_s": stamp, "valid_points": count,
+                          "total_points": len(message.ranges),
+                          "receive_interval_s": now-self.last_scan["received_s"] if self.last_scan else None}
+
+    def on_odom(self, message):
+        self.last_odom = {"received_s": self.get_clock().now().nanoseconds * 1e-9,
+                          "stamp_s": message.header.stamp.sec + message.header.stamp.nanosec * 1e-9,
+                          "linear_speed_m_s": message.twist.twist.linear.x,
+                          "angular_speed_rad_s": message.twist.twist.angular.z}
+
+    def record_state(self, stamp=None, pose=None, reason=None):
+        if self.journal is None:
+            return
+        now = self.get_clock().now().nanoseconds * 1e-9
+        if self.last_journal_time is not None and now-self.last_journal_time < self.pose_period and now >= self.last_journal_time:
+            return
+        self.last_journal_time = now
+        fields = {}
+        for name, value in (("scan", self.last_scan), ("odom", self.last_odom)):
+            fields[name] = value
+            fields[name+"_available"] = value is not None and 0 <= now-value["received_s"] <= self.scenario["max_sensor_gap_s"]
+        self.journal.observe(now, stamp, pose, reason, **fields)
+
     @staticmethod
     def _advance_deadline(deadline: float, period: float, now: float) -> float:
         """Advance a periodic deadline without accumulating timer drift."""
@@ -102,6 +152,7 @@ class Marker98PoseNode(Node):
             tf: TransformStamped = self.buffer.lookup_transform(
                 self.map_frame, self.base_frame, rclpy.time.Time())
         except Exception:
+            self.record_state(reason="tf_unavailable")
             return
         q = tf.transform.rotation
         alpha = math.atan2(2.0 * (q.w * q.z), 1.0 - 2.0 * q.z * q.z)
@@ -110,8 +161,10 @@ class Marker98PoseNode(Node):
         corrected_y = tf.transform.translation.y + s * self.pose_offset_x + c * self.pose_offset_y
         x, y, alpha_rad = pose_in_marker98_frame(
             corrected_x, corrected_y, alpha,
-            self.marker_x, self.marker_y, self.marker_alpha)
+            self.marker_x, self.marker_y, self.marker_alpha, y_axis_sign=self.y_axis_sign)
         alpha_deg = math.degrees(alpha_rad)
+        journal_stamp = tf.header.stamp.sec + tf.header.stamp.nanosec * 1e-9
+        self.record_state(journal_stamp, (x, y, alpha_rad))
         ts = tf.header.stamp.sec + tf.header.stamp.nanosec * 1e-9
         now_s = self.get_clock().now().nanoseconds * 1e-9
         sensor_age = now_s - ts
@@ -154,7 +207,9 @@ class Marker98PoseNode(Node):
                     )
                     self.sender_first_message_logged = True
             except self.sensor_sender.zmq.Again:
-                self.get_logger().warning("ContinuousNav lidar send would block")
+                if now_monotonic - self.last_send_warning_monotonic >= 5.0:
+                    self.get_logger().warning("ContinuousNav lidar send would block")
+                    self.last_send_warning_monotonic = now_monotonic
         elif self.sensor_sender and sensor_send_due:
             if sensor_age > self.max_sensor_age or sensor_age < -0.25:
                 self.skipped_stale_measurements += 1
@@ -173,6 +228,8 @@ class Marker98PoseNode(Node):
                 )
 
     def destroy_node(self):
+        if self.journal:
+            self.journal.close(self.get_clock().now().nanoseconds * 1e-9)
         if self.sensor_sender:
             self.sensor_sender.close()
             self.sensor_sender = None
@@ -191,6 +248,10 @@ def main() -> None:
     p.add_argument("--map-frame", default="map")
     p.add_argument("--base-frame", default="base_link")
     p.add_argument("--csv", default="")
+    p.add_argument("--journal", default="", help="new JSONL file; default CSV path + .journal.jsonl")
+    p.add_argument("--scenario-config", default="", help="scenario JSON with acceptance thresholds")
+    p.add_argument("--scan-topic", default="/scan")
+    p.add_argument("--odom-topic", default="/wheel_odom")
     p.add_argument("--rate", type=float, default=10.0)
     p.add_argument(
         "--sensor-send-rate", type=float, default=10.0,

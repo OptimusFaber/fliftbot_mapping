@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "navigation_raster_matches_base_projection_fraction": 1.0,
+  "base_to_web_control_points_max_error_px": 3.462436183823505e-12,
+  "web_image_size_px": [
+    4047,
+    4391
+  ],
+  "origin_web_pixel": [
+    252,
+    4203
+  ],
+  "navigation_origin_local_xy": [
+    0.0,
+    0.0
+  ],
+  "light_matches_edited_image_geometry": true,
+  "pbstream_matches_source": true,
+  "web_formulas": [
+    "u = 252 + 100*x",
+    "v = 4203 - 100*y"
+  ],
+  "handedness": "right-handed output with Z up; ROS map remains right-handed",
+  "visual_note": "manual redrawing modifies interior equipment, overlay is not expected to match every contour",
+  "axis_contract": "+X right, +Y up",
+  "angle_contract": "0 toward image right; positive counterclockwise toward image up"
+}

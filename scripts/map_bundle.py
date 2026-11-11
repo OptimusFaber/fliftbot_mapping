@@ -24,6 +24,14 @@ def read_reference(path: Path) -> tuple[float, float, float]:
     return result
 
 
+def read_y_axis_sign(path: Path) -> int:
+    """Handedness of published navigation coordinates; ROS/map stays unchanged."""
+    value = json.loads(path.read_text(encoding="utf-8")).get("y_axis_sign", 1)
+    if value not in (-1, 1):
+        raise ValueError(f"{path}: y_axis_sign must be -1 or +1")
+    return int(value)
+
+
 def validate_bundle(directory: Path) -> dict:
     root = directory.expanduser().resolve()
     required = ("map.pbstream", "map.yaml", "origin_reference.json",
@@ -73,6 +81,7 @@ def validate_bundle(directory: Path) -> dict:
     if odom["model"] not in ("drive_wheel", "bicycle", "legacy_sin"):
         raise ValueError("unsupported odometry model")
     reference = read_reference(root / "origin_reference.json")
+    y_axis_sign = read_y_axis_sign(root / "origin_reference.json")
     # Load the actual raster too: a valid manifest alone does not validate YAML.
     from direct_udp_mc_localizer import load_map
     _, _, _, _, _ = load_map(root / "map.yaml")
@@ -81,7 +90,46 @@ def validate_bundle(directory: Path) -> dict:
         x, y, yaw = reference
         c, s = math.cos(yaw), math.sin(yaw)
         expected = np.array([[c, s, -c*x-s*y], [-s, c, s*x-c*y], [0, 0, 1]])
+        expected[1] *= y_axis_sign
         if matrix.shape != (3, 3) or not np.allclose(matrix, expected, atol=1e-7):
             raise ValueError("origin_reference and pbstream_to_local_matrix disagree")
+    # Web assets, when declared, must use the same origin and matrix chain.
+    metadata_path = root / "map_metadata.json"
+    if metadata_path.is_file():
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        matrices = metadata.get("matrices", {})
+        keys = {"local_xy_metres_to_raster_uv_pixels": "map_transform_matrix.npy",
+                "pbstream_map_xy_metres_to_local_xy_metres": "pbstream_to_local_matrix.npy",
+                "pbstream_map_xy_metres_to_raster_uv_pixels": "pbstream_to_raster_matrix.npy"}
+        loaded = {}
+        for key, filename in keys.items():
+            if key not in matrices:
+                continue
+            path = root / filename
+            if filename not in indexed or not path.is_file():
+                raise ValueError(f"web matrix missing from bundle/manifest: {filename}")
+            actual = np.load(path)
+            if (actual.shape != (3, 3) or not np.isfinite(actual).all()
+                    or not np.allclose(actual, matrices[key], atol=1e-7, rtol=0)):
+                raise ValueError(f"web metadata matrix disagrees with {filename}")
+            loaded[filename] = actual
+        if len(loaded) == 3:
+            local_to_pixel = loaded["map_transform_matrix.npy"]
+            to_local = loaded["pbstream_to_local_matrix.npy"]
+            if not np.allclose(local_to_pixel @ to_local,
+                               loaded["pbstream_to_raster_matrix.npy"], atol=1e-7, rtol=0):
+                raise ValueError("web and navigation matrix composition disagrees")
+            origin_pixel = metadata.get("origin_pixel_xy_tver")
+            if origin_pixel is not None and not np.allclose(
+                    (local_to_pixel @ [0, 0, 1])[:2], origin_pixel, atol=1e-7, rtol=0):
+                raise ValueError("web pixel origin disagrees with local origin")
+        web_image = metadata.get("web_image")
+        if web_image:
+            if Path(web_image).name != web_image or web_image not in indexed:
+                raise ValueError("web image must be local and covered by manifest")
+            from PIL import Image
+            with Image.open(root / web_image) as image:
+                if list(image.size) != metadata.get("image_size_px"):
+                    raise ValueError("web image size disagrees with metadata")
     return {"status": "accepted", "map_dir": str(root), "files_verified": len(indexed),
             "navigation_config": config, "origin_map_pose": reference}

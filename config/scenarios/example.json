@@ -1,0 +1,17 @@
+{
+  "scenario_id": "warehouse_route_01",
+  "route_id": "route_01",
+  "description": "Example only: agree orientation and availability thresholds before trials",
+  "position_error_m": 0.05,
+  "orientation_error_deg": null,
+  "max_pose_age_s": 0.5,
+  "max_reference_gap_s": 0.2,
+  "min_event_duration_s": 0.5,
+  "min_availability": 0.99,
+  "min_reference_coverage": 0.95,
+  "required_within_threshold_fraction": 0.95,
+  "max_failure_episodes": 0,
+  "jump_position_m": 0.5,
+  "jump_orientation_deg": 20.0,
+  "max_sensor_gap_s": 0.5
+}

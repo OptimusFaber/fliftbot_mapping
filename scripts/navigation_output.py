@@ -5,6 +5,26 @@ from navigation_measurement import SensorMeasurement
 LIDAR_VARIANCE = [0.05 ** 2, 0.05 ** 2, math.radians(3.0) ** 2]
 
 
+def send_sensor_measurement(socket, timestamp: float, value, variance=(),
+                            sensor_type="top_navigation") -> None:
+    """Send one SensorMeasurement protobuf over an existing ZMQ PUB socket.
+
+    The receiver binds a SUB socket and subscribes to b"" (no topic prefix).
+    Reuse the connected socket; PUB/SUB discovery must complete before sending.
+    timestamp: Unix seconds. Pose value: [x_m, y_m, yaw_rad].
+    sensor_type: enum name, e.g. "top_navigation" or "lidar".
+    Raises zmq.Again if the nonblocking send would block.
+    """
+    import zmq
+    message = SensorMeasurement(
+        sensor_type=SensorMeasurement.SensorType.Value(sensor_type),
+        timestamp=timestamp,
+        value=value,
+        variance=variance,
+    )
+    socket.send(message.SerializeToString(), flags=zmq.NOBLOCK)
+
+
 class LidarSensorSender:
     """Send lidar pose as a full-pose ContinuousNav measurement."""
 
@@ -28,13 +48,10 @@ class LidarSensorSender:
              alpha_deg: float) -> None:
         # ContinuousNav's top_navigation measurement is [x_m, y_m, yaw_rad].
         # The ROS/CSV interface remains in degrees for operators.
-        message = self.message_type(
-            sensor_type=self.message_type.SensorType.Value("top_navigation"),
-            timestamp=timestamp,
-            value=[x, y, math.radians(alpha_deg)],
-            variance=LIDAR_VARIANCE,
+        send_sensor_measurement(
+            self.socket, timestamp, [x, y, math.radians(alpha_deg)], LIDAR_VARIANCE,
+            sensor_type="top_navigation",
         )
-        self.socket.send(message.SerializeToString(), flags=self.zmq.NOBLOCK)
         self.sent_count += 1
 
     def close(self) -> None:

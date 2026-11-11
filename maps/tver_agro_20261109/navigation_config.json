@@ -1,0 +1,18 @@
+{
+  "schema": "fliftbot.navigation_config.v1",
+  "lidar_type": "dephan_m360",
+  "points_frame": "sensor",
+  "scan_to_base": {
+    "x_m": 1.066,
+    "y_m": 0.25,
+    "yaw_deg": 180.0
+  },
+  "max_range_m": 80.0,
+  "odometry": {
+    "speed_sign": 1.0,
+    "steering_sign": 1.0,
+    "steering_zero_deg": -0.0,
+    "wheelbase_m": 1.38,
+    "model": "drive_wheel"
+  }
+}

@@ -24,7 +24,8 @@ def _main() -> int:
     check = commands.add_parser("check-map", help="verify deploy files, hashes, origin and calibration")
     check.add_argument("--map-dir", type=Path, required=True)
     commands.add_parser("verify", help="offline syntax, bundle and localization regression checks")
-    for name, help_text in (("instant", "one full UDP revolution without ROS"),
+    for name, help_text in (("report", "evaluate localization journal by scenario"),
+                            ("instant", "one full UDP revolution without ROS"),
                             ("localize-recording", "canonical NPZ replay without ROS"),
                             ("sim", "live localization on fliftbot_sim sensor topics"),
                             ("live", "UDP + MC + Cartographer + navigation pose output")):
@@ -57,7 +58,7 @@ def _main() -> int:
         command = ["ros2", "launch", str(root / "launch/mc_lidar_localization.launch.py"),
                    f"sensor:={config.sensor}", f"map_dir:={config.map_dir.resolve()}", *launch_arguments]
     else:
-        script = {"instant": "instant_global_localize.py",
+        script = {"report": "localization_report.py", "instant": "instant_global_localize.py",
                   "localize-recording": "localize_recording.py"}[args.command]
         command = [sys.executable, str(root / "scripts" / script), *forwarded]
     os.execvp(command[0], command)

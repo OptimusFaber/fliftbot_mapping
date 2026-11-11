@@ -10,6 +10,7 @@ import math
 from pathlib import Path
 
 from marker98_pose import pose_in_marker98_frame
+from map_bundle import read_y_axis_sign
 
 
 DOTNET_EPOCH = 62135596800.0
@@ -29,12 +30,17 @@ def normalize(input_path: Path, output_path: Path, reference_path: Path) -> int:
     if not isinstance(poses, list) or not poses:
         raise ValueError(f"{input_path}: expected non-empty poses list")
     reference = json.loads(reference_path.read_text(encoding="utf-8"))
-    x0, y0 = map(float, reference["marker98_map_xy_m"])
-    a0 = float(reference.get("marker98_map_yaw_rad", 0.0))
+    origin = reference.get("origin_map_xy_m", reference.get("marker98_map_xy_m"))
+    if origin is None:
+        raise ValueError(f"{reference_path}: missing map origin")
+    x0, y0 = map(float, origin)
+    a0 = float(reference.get("origin_map_yaw_rad", reference.get("marker98_map_yaw_rad", 0.0)))
+    y_axis_sign = read_y_axis_sign(reference_path)
     rows = []
     for pose in poses:
         x, y, alpha = pose_in_marker98_frame(
-            float(pose["x"]), float(pose["y"]), yaw(pose), x0, y0, a0)
+            float(pose["x"]), float(pose["y"]), yaw(pose), x0, y0, a0,
+            y_axis_sign=y_axis_sign)
         rows.append({
             "x": x,
             "y": y,

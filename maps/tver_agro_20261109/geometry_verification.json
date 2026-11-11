@@ -1,0 +1,64 @@
+{
+  "registration_feature_matches": 1560,
+  "registration_inliers": 1530,
+  "measured_scale_base_to_source": 1.0000024992216903,
+  "base_pixel_to_pbstream_map_metres": [
+    [
+      -0.0006105818080860897,
+      0.009981342086895646,
+      -34.96957253422313
+    ],
+    [
+      0.009981342086895646,
+      0.0006105818080860897,
+      -36.40561250221169
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "source_pbstream_origin_xy_m": [
+    5.891065613480613,
+    -32.38323134642633
+  ],
+  "axis_checks": [
+    {
+      "name": "origin",
+      "expected_local_xy_m": [
+        0,
+        0
+      ],
+      "actual_local_xy_m": [
+        2.6645352591003757e-15,
+        -1.4210854715202004e-14
+      ],
+      "status": "passed"
+    },
+    {
+      "name": "X_right",
+      "expected_local_xy_m": [
+        1,
+        0
+      ],
+      "actual_local_xy_m": [
+        1.0000000000000027,
+        -1.4210854715202004e-14
+      ],
+      "status": "passed"
+    },
+    {
+      "name": "Y_up",
+      "expected_local_xy_m": [
+        0,
+        1
+      ],
+      "actual_local_xy_m": [
+        2.6645352591003757e-15,
+        0.9999999999999858
+      ],
+      "status": "passed"
+    }
+  ]
+}

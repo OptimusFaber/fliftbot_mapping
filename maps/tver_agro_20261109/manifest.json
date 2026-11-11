@@ -1,0 +1,91 @@
+{
+  "schema": "fliftbot.deploy_catalog.v1",
+  "source_run": "/home/optimus/ros-projects/ros-data/results/real/20261109_141038_map_wb138_range_v2",
+  "files": [
+    {
+      "path": "README.txt",
+      "size": 1948,
+      "sha256": "4a2ca04402c60dea0418b6a72c8f25191e9200b69b1af4c1370ce9080bdc5dbd"
+    },
+    {
+      "path": "coordinate_audit.json",
+      "size": 776,
+      "sha256": "843ec62d7a76521677c9bb2bec3840c4690417f5e40470381006896360bd12c4"
+    },
+    {
+      "path": "geometry_verification.json",
+      "size": 1185,
+      "sha256": "a80ea6aac37606ab2dacb4e8d774c98ea0961ed7f8c474db04acaf14629fd56b"
+    },
+    {
+      "path": "map.pbstream",
+      "size": 7680123,
+      "sha256": "3d9ce6f5a25f4d97bfb9ef83c58676cfbdf26ba4b66e4c15b836652ba9366ddb"
+    },
+    {
+      "path": "map.pgm",
+      "size": 18121696,
+      "sha256": "f155c4298e75992a13939863badc9420b699301cd3bb89fcea7087daeebeb1d4"
+    },
+    {
+      "path": "map.yaml",
+      "size": 132,
+      "sha256": "7d214a82c79c58e850c8bd057bd2f962e5453d4be64d6c6b023bb572f6bc2c90"
+    },
+    {
+      "path": "map_bw.png",
+      "size": 48974,
+      "sha256": "80dbee836f77eb622008cc74b667395ea592457cca6da8dbcefde5ad92adbf2a"
+    },
+    {
+      "path": "map_grid_1m.png",
+      "size": 679811,
+      "sha256": "57f94ec771b3b19802b1ac73a835c124660e3a56de753a78b1c41312b97e9158"
+    },
+    {
+      "path": "map_light.png",
+      "size": 635222,
+      "sha256": "06b63379580b6a483239633f1a79bf67c32cf0a24561c3426cfddfe4ba81c63a"
+    },
+    {
+      "path": "map_metadata.json",
+      "size": 1986,
+      "sha256": "044a2b3f3b495dfc4b671ce8d9334d52262a43eeb156fa13e5dd7be0a7ff9446"
+    },
+    {
+      "path": "map_transform_matrix.npy",
+      "size": 200,
+      "sha256": "187b446350befdd7c35a072665ef29e75fe41059f94eccfb789a6eba4ed56a90"
+    },
+    {
+      "path": "navigation_config.json",
+      "size": 364,
+      "sha256": "0e81e2332a7a65789e0336e3301fbdf72eef8b91b3405eec301552a3c6130110"
+    },
+    {
+      "path": "navigation_web_overlay.png",
+      "size": 792275,
+      "sha256": "d6adce34533712b841c11e38bf9dfad1deee7cb1c4abfe4e1537a4aa6c333240"
+    },
+    {
+      "path": "origin_axes_preview.png",
+      "size": 10648,
+      "sha256": "5e205857cf62db024ad0334de70179a57fc4ba41d0aa00d4afb0e3798f5d6624"
+    },
+    {
+      "path": "origin_reference.json",
+      "size": 628,
+      "sha256": "af192c6bac935d54e8d35f2f9dab67c831b68a473dfb68ede34a07cc81c24c34"
+    },
+    {
+      "path": "pbstream_to_local_matrix.npy",
+      "size": 200,
+      "sha256": "6c4c908386d08c52d1a42886b417ca177d30775f999088ed085d8569a86e5735"
+    },
+    {
+      "path": "pbstream_to_raster_matrix.npy",
+      "size": 200,
+      "sha256": "ff905319f580e2fb9d2e40b2ee2d75e20f2975f107c4d8cde6dcdcba60f05a4a"
+    }
+  ]
+}

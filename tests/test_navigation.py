@@ -159,6 +159,39 @@ class NavigationContract(unittest.TestCase):
             receiver.close(linger=0)
             context.term()
 
+    def test_generic_protobuf_sender_selects_lidar_type(self):
+        try:
+            import zmq
+        except ImportError:
+            self.skipTest('requires pyzmq')
+        from navigation_output import send_sensor_measurement
+        from navigation_measurement import SensorMeasurement
+        context = zmq.Context()
+        receiver = context.socket(zmq.SUB)
+        receiver.setsockopt(zmq.SUBSCRIBE, b'')
+        port = receiver.bind_to_random_port('tcp://127.0.0.1')
+        publisher = context.socket(zmq.PUB)
+        publisher.setsockopt(zmq.LINGER, 0)
+        publisher.connect(f'tcp://127.0.0.1:{port}')
+        try:
+            payload = None
+            deadline = time.monotonic() + 3
+            while time.monotonic() < deadline:
+                send_sensor_measurement(publisher, 1793369600., [1., 2., .3],
+                                        [.01, .01, .001], sensor_type='lidar')
+                if receiver.poll(50):
+                    payload = receiver.recv()
+                    break
+            self.assertIsNotNone(payload)
+            message = SensorMeasurement.FromString(payload)
+            self.assertEqual(message.sensor_type, 4)
+            np.testing.assert_allclose(message.value, [1., 2., .3])
+            self.assertEqual(message.timestamp, 1793369600.)
+        finally:
+            publisher.close(linger=0)
+            receiver.close(linger=0)
+            context.term()
+
     def test_bundled_profiles_and_maps(self):
         for sensor in ('dephan', 'pandar'):
             profile = load_profile(sensor)
