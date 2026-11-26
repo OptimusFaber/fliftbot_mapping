@@ -20,3 +20,12 @@ __pycache__/
 /maps/*/reference_before_marker98/
 /maps/*/showroom_marker98_axes.png
 /maps/*/showroom_marker98_wall_distances.png
+
+# Local development and experiments (kept outside published sources)
+/local_experiments/
+/tests/
+/pytest.ini
+/scripts/verify.py
+/docs/localization_trials.md
+/docs/verification.md
+/docs/live_localization_audit.md

@@ -23,7 +23,6 @@ def _main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     check = commands.add_parser("check-map", help="verify deploy files, hashes, origin and calibration")
     check.add_argument("--map-dir", type=Path, required=True)
-    commands.add_parser("verify", help="offline syntax, bundle and localization regression checks")
     for name, help_text in (("report", "evaluate localization journal by scenario"),
                             ("instant", "one full UDP revolution without ROS"),
                             ("localize-recording", "canonical NPZ replay without ROS"),
@@ -38,8 +37,6 @@ def _main() -> int:
         from map_bundle import validate_bundle
         print(json.dumps(validate_bundle(args.map_dir), indent=2))
         return 0
-    if args.command == "verify":
-        return subprocess.call([sys.executable, str(root / "scripts/verify.py"), *forwarded])
     if args.command == "sim":
         sim = argparse.ArgumentParser(description="Localize live fliftbot_sim on a deploy map; isolated wheel-only TF")
         sim.add_argument("--map-dir", type=Path, required=True)
