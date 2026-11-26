@@ -23,8 +23,8 @@ from wheel_motion import resolve_odometry_model
 
 def _nodes(context):
     sensor = LaunchConfiguration("sensor").perform(context)
-    if sensor not in ("pandar", "dephan"):
-        raise RuntimeError("sensor must be exactly 'pandar' or 'dephan'")
+    if sensor not in ("pandar", "dephan", "rplidar"):
+        raise RuntimeError("sensor must be pandar, dephan or rplidar")
     map_dir = LaunchConfiguration("map_dir").perform(context)
     profile = load_profile(sensor, Path(map_dir) if map_dir else None)
     profile_dir = profile["map_dir"]
@@ -80,8 +80,8 @@ def _nodes(context):
     steering_sign = LaunchConfiguration("steering_sign").perform(context) or str(odometry.get("steering_sign", 1.0))
     scan_rate = LaunchConfiguration("scan_rate_hz").perform(context) or str(profile.get("scan_rate_hz", 20.0))
     range_max = LaunchConfiguration("range_max").perform(context) or str(profile.get("max_range_m", 30.0))
-    udp_port = LaunchConfiguration("udp_port").perform(context) or str(profile["udp_port"])
-    udp_source = LaunchConfiguration("udp_source").perform(context) or profile["source_ip"]
+    udp_port = LaunchConfiguration("udp_port").perform(context) or str(profile.get("udp_port", ""))
+    udp_source = LaunchConfiguration("udp_source").perform(context) or profile.get("source_ip", "")
     speed_sign = speed_sign_arg or str(odometry.get("speed_sign", -1.0))
     steering_zero = steering_zero_arg or str(odometry.get("steering_zero_deg", 0.0))
     wheelbase = wheelbase_arg or str(odometry.get("wheelbase_m", 1.410))
@@ -114,7 +114,19 @@ def _nodes(context):
 
     nodes = [
         ExecuteProcess(
-            cmd=[
+        cmd=([PYTHON, str(SCRIPTS / "rplidar_recording_scan_publisher.py"),
+                  "--recording", LaunchConfiguration("rplidar_recording"),
+                  "--scan-topic", LaunchConfiguration("scan_topic"),
+                  "--scan-rate-hz", scan_rate, "--range-max", range_max,
+                  "--sensor-x", sensor_x, "--sensor-y", sensor_y,
+                  "--sensor-yaw-deg", sensor_yaw] if sensor == "rplidar" else
+             [PYTHON, str(SCRIPTS / "m360_recording_scan_publisher.py"),
+                  "--recording", LaunchConfiguration("dephan_recording"),
+                  "--scan-topic", LaunchConfiguration("scan_topic"),
+                  "--scan-rate-hz", scan_rate, "--range-max", range_max,
+                  "--sensor-x", sensor_x, "--sensor-y", sensor_y,
+                  "--sensor-yaw-deg", sensor_yaw] if sensor == "dephan" and
+                     LaunchConfiguration("dephan_recording").perform(context) else [
                 PYTHON, str(SCRIPTS / "direct_udp_scan_publisher.py"),
                 "--sensor", sensor,
                 "--scan-topic", LaunchConfiguration("scan_topic"),
@@ -126,7 +138,7 @@ def _nodes(context):
                 "--sensor-yaw-deg", sensor_yaw,
                 "--sensor-x", sensor_x,
                 "--sensor-y", sensor_y,
-            ],
+            ]),
             output="screen",
         ),
         ExecuteProcess(
@@ -186,6 +198,9 @@ def _nodes(context):
              "--configuration-directory", LaunchConfiguration("configuration_directory"),
              "--configuration-basename", LaunchConfiguration("configuration_basename"),
              "--scan-topic", LaunchConfiguration("scan_topic"),
+             "--initial-localization", LaunchConfiguration("initial_localization"),
+             "--marker-pose-topic", LaunchConfiguration("marker_input_topic"),
+             "--stable-scans", LaunchConfiguration("stable_scans"),
              f"--initial-pose={LaunchConfiguration('initial_pose').perform(context)}"], output="screen"))
     if LaunchConfiguration("publish_occupancy_grid").perform(context).lower() in (
             "1", "true", "yes", "on"):
@@ -205,8 +220,16 @@ def generate_launch_description():
                               description="fliftbot_map_build calibrated deploy bundle"),
         DeclareLaunchArgument("initial_pose", default_value="",
                               description="optional X_MAP,Y_MAP,YAW_RAD acquisition seed"),
+        DeclareLaunchArgument("initial_localization", default_value="lidar"),
+        DeclareLaunchArgument("marker_input_topic", default_value="",
+                              description="empty: /fliftbotNNN/odom/labels from hostname"),
+        DeclareLaunchArgument("stable_scans", default_value="5"),
         DeclareLaunchArgument("sensor", default_value="dephan",
-                              description="LiDAR profile: pandar or dephan"),
+                              description="LiDAR profile: pandar, dephan or rplidar"),
+        DeclareLaunchArgument("rplidar_recording", default_value="/home/user/fliftbot/recordings/scan.rplidar",
+                              description="growing RPLRAW1 recording from the sole FIFO reader"),
+        DeclareLaunchArgument("dephan_recording", default_value="",
+                              description="growing M360RAW1 recording from the sole UDP reader"),
         DeclareLaunchArgument("map_pbstream", default_value="",
                               description="Optional override; pair with an origin/marker reference"),
         DeclareLaunchArgument("marker_reference", default_value="",

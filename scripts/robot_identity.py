@@ -22,3 +22,7 @@ def robot_namespace(hostname: str | None = None) -> str:
 
 def mc_topic(hostname: str | None = None) -> str:
     return f"/{robot_namespace(hostname)}/mc_telemetry"
+
+
+def labels_topic(hostname: str | None = None) -> str:
+    return f"/{robot_namespace(hostname)}/odom/labels"

@@ -92,9 +92,14 @@ class Journal:
     def observe(self, now, stamp=None, pose=None, reason=None, **fields):
         finite = stamp is not None and math.isfinite(stamp) and pose is not None and all(math.isfinite(v) for v in pose)
         age = now - stamp if finite else None
-        fresh = finite and -0.25 <= age <= self.scenario["max_pose_age_s"]
+        pose_fresh = finite and -0.25 <= age <= self.scenario["max_pose_age_s"]
+        # TF can keep advancing from wheel odometry when LiDAR scans stop.
+        # Such a pose is not a fresh LiDAR localization estimate.
+        scan_available = fields.get("scan_available", True)
+        fresh = pose_fresh and scan_available
         new = finite and (self.last_stamp is None or stamp > self.last_stamp + 1e-6)
-        state = "available" if fresh else (reason or ("stale_pose" if finite else "no_pose"))
+        state = "available" if fresh else ("scan_unavailable" if pose_fresh and not scan_available
+                                           else (reason or ("stale_pose" if finite else "no_pose")))
         if state != self.state:
             self.write("event", time_s=now, event="state_changed", previous=self.state, state=state)
             self.state = state

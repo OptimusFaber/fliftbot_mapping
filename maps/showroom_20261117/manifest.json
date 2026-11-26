@@ -1,0 +1,67 @@
+{
+  "schema": "fliftbot.deploy_catalog.v1",
+  "source_run": "/home/optimus/ros-projects/ros-data/results/real/20261117/20261117_173612_164744_new_recording_wb138_dxminus3_yaw180",
+  "deployment": "pass this directory to fliftbot_lidar_nav/nav.sh --map-dir",
+  "files": [
+    {
+      "path": "map.pbstream",
+      "size": 2849950,
+      "sha256": "60de5a8819f0e4b608a180e2752c41ac9d196b596680df4db3d1203dd0825722"
+    },
+    {
+      "path": "map.pgm",
+      "size": 232401,
+      "sha256": "ccb0498dae511f7291ccc6fb1523b724b22b47f745fa6347d8f569fb1f6f453d"
+    },
+    {
+      "path": "map.png",
+      "size": 24101,
+      "sha256": "28aa9677297f13bf867e432da8acc5ca4930bdffca2144363933fb19c690f409"
+    },
+    {
+      "path": "map.yaml",
+      "size": 123,
+      "sha256": "d78df65de9c72f449253dcde98a26521267f1973101e2b6fc025e1979a39b33a"
+    },
+    {
+      "path": "map_dark.jpg",
+      "size": 124514,
+      "sha256": "1d372e5ad9fb15e327cc9a89a65b7745e1ed9ed6443215b1914fdbe9524e9ad7"
+    },
+    {
+      "path": "map_light.jpg",
+      "size": 125766,
+      "sha256": "ceccb768a5fea7df2144b223116e6886c6ba6a014d166da5c432e1567a541eea"
+    },
+    {
+      "path": "map_metadata.json",
+      "size": 2094,
+      "sha256": "5f6dc0f6a12e806d3880a6295431be073f1b09e990d64ffa4acd9c5b3b9169f2"
+    },
+    {
+      "path": "map_transform_matrix.npy",
+      "size": 200,
+      "sha256": "c9ced2b9ae9c15d48a3bc275b5a7d33191a110c061c76e7ac19a91baf12268e1"
+    },
+    {
+      "path": "navigation_config.json",
+      "size": 365,
+      "sha256": "8b260c7c5ba6fffb85923e37f6fed2f6846eab4d7b13cd2f8948bb7e2bb9864f"
+    },
+    {
+      "path": "origin_reference.json",
+      "size": 344,
+      "sha256": "d088e2cb95495acac04f3b188a44a14d4fc014c64eb3bb155748ec52bbf1a74d"
+    },
+    {
+      "path": "pbstream_to_local_matrix.npy",
+      "size": 200,
+      "sha256": "d67e8184a277b394aa6dc126151c141101c9df1de4e83185acc59b72c66ac2e3"
+    },
+    {
+      "path": "pbstream_to_raster_matrix.npy",
+      "size": 200,
+      "sha256": "4117ea17e7a3f9b0fccb40391967f313efc5bdbed0dfea26b6ce9b55e4e08f73"
+    }
+  ]
+}

@@ -50,7 +50,7 @@ def _main() -> int:
                    f"map_dir:={config.map_dir.resolve()}", *launch_arguments]
     elif args.command == "live":
         live = argparse.ArgumentParser(description="Launch UDP/MC pure localization using calibrated map bundle")
-        live.add_argument("--sensor", choices=("dephan", "pandar"), required=True)
+        live.add_argument("--sensor", choices=("dephan", "pandar", "rplidar"), required=True)
         live.add_argument("--map-dir", type=Path, required=True)
         config, launch_arguments = live.parse_known_args(forwarded)
         from lidar_profiles import load_profile

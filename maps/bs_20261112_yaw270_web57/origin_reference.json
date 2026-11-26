@@ -1,0 +1,13 @@
+{
+  "schema": "fliftbot.map_origin_reference.v1",
+  "frame": "cartographer_map",
+  "origin_name": "web_marker_057",
+  "origin_map_xy_m": [
+    1.3533613182150213,
+    0.6614368426352251
+  ],
+  "origin_map_yaw_rad": 1.6265093482035087,
+  "origin_map_yaw_deg": 93.19212099063547,
+  "axis_contract": "+X right, +Y up",
+  "source": "map.pbstream"
+}

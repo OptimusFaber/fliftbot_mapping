@@ -1,0 +1,67 @@
+{
+  "schema": "fliftbot.deploy_catalog.v1",
+  "source_run": "/home/optimus/ros-projects/ros-data/results/real/20261112/183921_bs_rplidar_yaw270_odom",
+  "deployment": "pass this directory to fliftbot_lidar_nav/nav.sh --map-dir",
+  "files": [
+    {
+      "path": "map.pbstream",
+      "size": 16383704,
+      "sha256": "4c7764f55d462ded7d89f5a2111c5efa9628ddf923db541afba1e1b42e9695d2"
+    },
+    {
+      "path": "map.pgm",
+      "size": 1796327,
+      "sha256": "4125081f1c3882414fa4ec26b121d64c8d749094a97beb32467b1cc63e3d6142"
+    },
+    {
+      "path": "map.png",
+      "size": 382966,
+      "sha256": "d27fa1f74b0c0d17e8dd368c1a1ed7bf4abb25451d16f93c3eee5982d205e03b"
+    },
+    {
+      "path": "map.yaml",
+      "size": 123,
+      "sha256": "bdb09e28689cb418a1da0de75e1226150a767eeb369acc93d3444ab5326270ec"
+    },
+    {
+      "path": "map_dark.jpg",
+      "size": 173133,
+      "sha256": "6818f55de7e7a913892ef6739995b6d0acdcf93453eac3616497f035a7a32718"
+    },
+    {
+      "path": "map_light.jpg",
+      "size": 209918,
+      "sha256": "58ea3acac217e7c73f5db2b8f14f9e2d8e638113fa4d2616c2ed80598a92c7c4"
+    },
+    {
+      "path": "map_metadata.json",
+      "size": 2076,
+      "sha256": "0b2fbf298e4cb4777c6c4d5c2b7f4242de649fcf25d9ac935278c5d8cb1f417c"
+    },
+    {
+      "path": "map_transform_matrix.npy",
+      "size": 200,
+      "sha256": "739679334597d85801166f67d39fb3e635f9d2792820fd942e4b01587043b126"
+    },
+    {
+      "path": "navigation_config.json",
+      "size": 361,
+      "sha256": "24ad87f528425846f9b3027515b4ac9f3d1a19b413973926552d3b650de5333f"
+    },
+    {
+      "path": "origin_reference.json",
+      "size": 345,
+      "sha256": "33fdd4f9b1f110067085a04b674308e2aba1a19ab12569ed18ccb6a25b1b33a2"
+    },
+    {
+      "path": "pbstream_to_local_matrix.npy",
+      "size": 200,
+      "sha256": "39a9bea4f6692d1eef6bfcdd264a4cffa4746c56bc8ba08ee872093333f5bfcc"
+    },
+    {
+      "path": "pbstream_to_raster_matrix.npy",
+      "size": 200,
+      "sha256": "915a3279f7849b71baa4ad4ff76942590a6fe291ca66f2c6d059c86ed6c0de3c"
+    }
+  ]
+}

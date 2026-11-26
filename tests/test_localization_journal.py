@@ -38,6 +38,26 @@ class JournalTests(unittest.TestCase):
         self.assertFalse(samples[1]["new_sample"])
         self.assertEqual(report["classification"], "insufficient_evidence")
 
+    def test_scan_loss_marks_advancing_tf_unavailable_and_recovers(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/"run.jsonl"
+            journal = Journal(path, load_scenario())
+            for i in range(31):
+                now = i/10
+                journal.observe(now, now, (0, 0, 0), scan_available=not (10 <= i < 20))
+            journal.close(3.0)
+            records = [json.loads(v) for v in path.read_text().splitlines()]
+            samples = [r for r in records if r["kind"] == "sample"]
+            events = [r for r in records if r["kind"] == "event" and r.get("event") == "state_changed"]
+            self.assertEqual([e["state"] for e in events],
+                             ["available", "scan_unavailable", "available"])
+            self.assertFalse(samples[10]["fresh"])
+            self.assertEqual(samples[10]["state"], "scan_unavailable")
+            self.assertTrue(samples[20]["fresh"])
+            report = evaluate(path)
+            self.assertEqual(report["loss_count"], 1)
+            self.assertAlmostEqual(report["loss_duration_s"], 1.0)
+
     def test_missing_period_between_samples(self):
         report, _ = self.run_case([(0., 0., (0, 0, 0)), (2., 2., (0, 0, 0))])
         self.assertAlmostEqual(report["availability"], .25)

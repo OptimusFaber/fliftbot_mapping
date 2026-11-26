@@ -22,6 +22,11 @@
     },
     "note": "run_170557 accepted geometry; yaw converts the exported DePHAN scan heading to the robot body heading"
   },
+  "rplidar": {
+    "scan_rate_hz": 10.0,
+    "scan_to_base": {"x_m": 1.101, "y_m": 0.342, "yaw_deg": 0.0},
+    "odometry": {"speed_sign": 1.0, "steering_sign": 1.0, "steering_zero_deg": 0.0, "wheelbase_m": 1.41, "model": "drive_wheel"}
+  },
   "pandar": {
     "udp_port": 2368,
     "source_ip": "192.168.0.223",

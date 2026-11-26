@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 import sys
 import threading
+import time
 
 import numpy as np
 import rclpy
@@ -12,11 +13,13 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from rclpy.utilities import remove_ros_args
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
 from cartographer_ros_msgs.srv import StartTrajectory
 from tf2_ros import Buffer, TransformListener
 from scipy.spatial import cKDTree
 
 import direct_udp_mc_localizer as matcher
+from robot_identity import labels_topic
 
 
 class Initializer(Node):
@@ -32,11 +35,44 @@ class Initializer(Node):
         self.running = False
         self.candidate = None
         self.future = None
+        self.matches = []
+        self.marker_seed = None
+        self.marker_time = 0.0
+        if args.initial_localization == 'markers':
+            self.local_to_pb = np.linalg.inv(np.load(args.map_dir / 'pbstream_to_local_matrix.npy'))
+            self.marker_topic = args.marker_pose_topic or labels_topic()
+            self.marker_frame = self.marker_topic.strip('/').split('/')[0] + '/odom'
+            self.marker_subscription = self.create_subscription(Odometry, self.marker_topic, self.marker, 10)
+            self.get_logger().info(f'initial marker odometry: {self.marker_topic}, frame={self.marker_frame}')
         self.subscription = self.create_subscription(LaserScan, args.scan_topic, self.scan, qos_profile_sensor_data)
         self.create_timer(.2, self.start)
 
+    def marker(self, message):
+        try:
+            if message.header.frame_id.lstrip('/') != self.marker_frame:
+                raise ValueError(f'unexpected frame_id {message.header.frame_id!r}')
+            if message.child_frame_id.lstrip('/') != self.marker_frame.rsplit('/', 1)[0] + '/base_footprint':
+                raise ValueError(f'unexpected child_frame_id {message.child_frame_id!r}')
+            stamp = message.header.stamp.sec + message.header.stamp.nanosec * 1e-9
+            x, y = message.pose.pose.position.x, message.pose.pose.position.y
+            q = message.pose.pose.orientation
+            norm = math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w)
+            if abs(norm-1.) > .01 or abs(q.x) > .01 or abs(q.y) > .01:
+                raise ValueError('invalid planar orientation quaternion')
+            yaw = 2*math.atan2(q.z, q.w)
+            if not all(math.isfinite(v) for v in (stamp, x, y, yaw)) or not 0 <= time.time()-stamp <= self.args.marker_max_age:
+                return
+            point = self.local_to_pb @ np.array([x, y, 1.0])
+            direction = self.local_to_pb[:2, :2] @ np.array([math.cos(yaw), math.sin(yaw)])
+            self.marker_seed = (float(point[0]), float(point[1]), math.atan2(direction[1], direction[0]))
+            self.marker_time = stamp
+        except (ValueError, TypeError) as exc:
+            self.get_logger().warn(f'invalid marker pose: {exc}')
+
     def scan(self, message):
         if self.started or self.running or self.candidate is not None:
+            return
+        if self.args.initial_localization == 'markers' and (self.marker_seed is None or time.time()-self.marker_time > self.args.marker_max_age):
             return
         ranges = np.asarray(message.ranges)
         valid = np.isfinite(ranges) & (ranges >= message.range_min) & (ranges <= message.range_max)
@@ -57,15 +93,25 @@ class Initializer(Node):
 
     def match(self, points):
         try:
-            seed = (tuple(map(float, self.args.initial_pose.split(','))) if self.args.initial_pose else
+            seed = (self.marker_seed if self.args.initial_localization == 'markers' else
+                    tuple(map(float, self.args.initial_pose.split(','))) if self.args.initial_pose else
                     matcher.global_pose(points, self.field, self.resolution, self.origin, self.shape))
             if len(seed) != 3:
                 raise ValueError("initial_pose must be X_MAP,Y_MAP,YAW_RAD")
             candidate, rmse, overlap = matcher.icp(points, self.tree, seed)
             if math.isfinite(rmse) and rmse <= .20 and overlap >= .50:
-                self.candidate = candidate
-                self.get_logger().info(f"map acquisition accepted: pose={candidate}, rmse={rmse:.3f}, overlap={overlap:.3f}")
+                if self.matches:
+                    previous = self.matches[-1]
+                    distance = math.hypot(candidate[0]-previous[0], candidate[1]-previous[1])
+                    angle = abs(math.atan2(math.sin(candidate[2]-previous[2]), math.cos(candidate[2]-previous[2])))
+                    if distance > self.args.stability_distance or angle > math.radians(self.args.stability_yaw_deg):
+                        self.matches.clear()
+                self.matches.append(candidate)
+                if len(self.matches) >= self.args.stable_scans:
+                    self.candidate = candidate
+                    self.get_logger().warn(f"map acquisition tentative after {len(self.matches)} scans: pose={candidate}, rmse={rmse:.3f}, overlap={overlap:.3f}; spatial correctness not verified")
             else:
+                self.matches.clear()
                 self.get_logger().warn(f"map acquisition rejected: rmse={rmse:.3f}, overlap={overlap:.3f}")
         except Exception as exc:
             self.get_logger().error(f"map acquisition failed: {exc}")
@@ -103,7 +149,15 @@ def main():
     parser.add_argument("--scan-topic", default="/scan")
     parser.add_argument("--base-frame", default="base_link")
     parser.add_argument("--initial-pose", default="", help="optional X_MAP,Y_MAP,YAW_RAD; still scan-validated")
+    parser.add_argument('--initial-localization', choices=('lidar', 'markers'), default='lidar')
+    parser.add_argument('--marker-pose-topic', default='')
+    parser.add_argument('--marker-max-age', type=float, default=0.5)
+    parser.add_argument('--stable-scans', type=int, default=5)
+    parser.add_argument('--stability-distance', type=float, default=0.3)
+    parser.add_argument('--stability-yaw-deg', type=float, default=10.0)
     args = parser.parse_args(remove_ros_args(sys.argv)[1:])
+    if args.stable_scans < 2 or args.marker_max_age <= 0 or args.stability_distance <= 0 or args.stability_yaw_deg <= 0:
+        parser.error('stability and age parameters must be positive; stable-scans >= 2')
     if args.initial_pose:
         try:
             values = tuple(map(float, args.initial_pose.split(',')))

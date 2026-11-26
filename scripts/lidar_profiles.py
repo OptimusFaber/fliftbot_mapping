@@ -20,7 +20,7 @@ def load_profile(sensor: str, map_dir: Path | None = None) -> dict:
         from map_bundle import validate_bundle
         report = validate_bundle(map_dir)
         calibration = report["navigation_config"]
-        supported = {"dephan": ("dephan_m360",), "pandar": ("pandar40p",)}
+        supported = {"dephan": ("dephan_m360",), "pandar": ("pandar40p",), "rplidar": ("rplidar",)}
         if calibration["lidar_type"] not in supported[sensor]:
             raise ValueError(f"bundle LiDAR {calibration['lidar_type']} does not match {sensor}")
         profile = {**profile, **calibration}

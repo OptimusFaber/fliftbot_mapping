@@ -10,3 +10,13 @@ __pycache__/
 .pytest_cache/
 .venv/
 .coverage
+
+# Local map and quick diagnostic scripts
+/maps/test-map/
+/scripts/*_test.py
+/scripts/*_debug.py
+
+# Map calibration diagnostics
+/maps/*/reference_before_marker98/
+/maps/*/showroom_marker98_axes.png
+/maps/*/showroom_marker98_wall_distances.png

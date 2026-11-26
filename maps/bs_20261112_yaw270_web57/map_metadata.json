@@ -1,0 +1,102 @@
+{
+  "schema": "fliftbot.web_map.v1",
+  "resolution_m_per_px": 0.05,
+  "image_size_px": [
+    661,
+    1615
+  ],
+  "axis_contract": "+X right, +Y up",
+  "origin": {
+    "type": "manual",
+    "name": "web_marker_057",
+    "local_xy_m": [
+      0.0,
+      0.0
+    ],
+    "pbstream_map_xy_m": [
+      1.3533613182150213,
+      0.6614368426352251
+    ],
+    "origin_map_yaw_deg": 93.19212099063547,
+    "image_unchanged": true
+  },
+  "automatic_alignment": {
+    "status": "aligned",
+    "line_count": 2,
+    "dominant_wall_residual_deg": -2.121096396661457,
+    "rotation_deg": 2.121096396661457,
+    "median_abs_deviation_deg": 1.0605481983307286
+  },
+  "crop_rotated_source_px": [
+    135,
+    370,
+    795,
+    1984
+  ],
+  "distant_ray_filter": {
+    "window_m": 1.0,
+    "minimum_occupied_cells": 60,
+    "selection": "automatic_bbox_contraction",
+    "affects_pixels": false,
+    "affects_crop_only": true
+  },
+  "occupancy": {
+    "negate": 0,
+    "occupied_thresh": 0.65,
+    "free_thresh": 0.196
+  },
+  "matrices": {
+    "local_xy_metres_to_raster_uv_pixels": [
+      [
+        -1.8520057131462417,
+        -19.914067260067032,
+        622.3168922390656
+      ],
+      [
+        -19.914067260067032,
+        1.8520057131462417,
+        1688.56200450648
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "pbstream_map_xy_metres_to_local_xy_metres": [
+      [
+        -0.05568420422836579,
+        0.9984484310165717,
+        -0.5850497297074398
+      ],
+      [
+        -0.9984484310165717,
+        -0.05568420422836579,
+        1.3880930689997724
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "pbstream_map_xy_metres_to_raster_uv_pixels": [
+      [
+        19.986296675335343,
+        -0.7402332101976064,
+        595.7578289416641
+      ],
+      [
+        -0.7402332101976064,
+        -19.986296675335343,
+        1702.7834804685242
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "source_map": "/home/optimus/ros-projects/ros-data/results/real/20261112/183921_bs_rplidar_yaw270_odom/map"
+}
